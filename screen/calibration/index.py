@@ -41,7 +41,7 @@ class CalibrationMain(QWidget):
         self.folder_created = False
         self.buttons = []  # Button list
         self.camera_buttons = []
-
+        self.robot = None
 
         # self.setup_emergency_stop()
         # Set up layouts
@@ -562,7 +562,7 @@ class CalibrationMain(QWidget):
                 self.is_connected = True  # 성공적으로 연결된 경우
                 self.ip_address = ip_address
                 self.connect_button.setText('해제')  # Button text 변경
-                self.connect_button.disconnect()  # disconnect all slots
+                # self.connect_button.disconnect()  # disconnect all slots
                 self.connect_button.clicked.connect(self.on_disconnect_button_clicked)  # Button action 변경
                 print("moving to initial pose")
                 self.robot.movej((90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), 90*(self.pi/180), 0*(self.pi/180)), acc=self.ACCELERATION, vel=self.VELOCITY, wait=False)
@@ -581,7 +581,7 @@ class CalibrationMain(QWidget):
         # listener.stop()
         self.is_connected = False  # 연결 해제 후
         self.connect_button.setText('연결')  # Button text 변경
-        self.connect_button.disconnect()
+        # self.connect_button.disconnect()
         self.set_connection_state(False)
         self.connect_button.clicked.connect(self.on_connect_button_clicked)  # Button action 변경
 
@@ -736,9 +736,11 @@ class CalibrationMain(QWidget):
             self.print_np(total_cam[:,:,0])
 
         # robot_pose = rob.getl()
-        # robot_position = robot_pose[:3]
+        robot_pose = self.robot.getl()
+
         print(robot_pose)
-        # R_inv = cal_R_inv(robot_pose)
+        robot_position = robot_pose[:3]
+        R_inv = self.cal_R_inv(robot_pose)
 
         images = color_image
 
@@ -750,7 +752,33 @@ class CalibrationMain(QWidget):
         # Assuming the ids, corners and depth_image are the required data
         return calibration_image, total_cam, R_inv, robot_position
 
-    def print_np(x):
+    def cal_R_inv(self,robot_pose):
+        position = robot_pose[:3]
+        rxryrz = robot_pose[3:]
+        theta = np.sqrt((rxryrz[0] ** 2) + (rxryrz[1] ** 2) + (rxryrz[2] ** 2))
+        if rxryrz[0] < 0:
+            rxryrz[0] = -rxryrz[0]
+            rxryrz[1] = -rxryrz[1]
+            rxryrz[2] = -rxryrz[2]
+        else:
+            pass
+
+        ux = rxryrz[0] / theta
+        uy = rxryrz[1] / theta
+        uz = rxryrz[2] / theta
+
+        c = math.cos(theta)
+        s = math.sin(theta)
+        C = 1 - c
+        R = np.array([[ux*ux*C+c, ux*uy*C - uz*s, ux*uz*C +uy*s,0],
+                [uy*ux*C +uz*s, uy*uy*C + c, uy*uz*C - ux*s,0],
+                [uz*ux*C -uy*s, uz*uy*C + ux*s, uz*uz*C + c,0],
+                    [0,0,0,1]])
+
+        R_inv = lin.inv(R)
+
+        return R_inv
+    def print_np(self,x):
         print("Type is %s" %(type(x)))
         print("Shape is %s" % (x.shape,))
         print("Values are: \n%s" % (x))
