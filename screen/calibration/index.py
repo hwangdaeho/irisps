@@ -19,6 +19,14 @@ import os
 from screen.video_manager import VideoManager
 import datetime
 from toast import Toast
+import pandas as pd
+import numpy.linalg as lin
+from PIL import Image
+from PIL import ImageDraw
+import time
+# import URBasic
+import cv2
+import matplotlib.pyplot as plt
 class CalibrationMain(QWidget):
     def __init__(self, parent=None, stacked_widget=None, main_window=None):
         print("Initializing CalibrationMain...")
@@ -33,6 +41,8 @@ class CalibrationMain(QWidget):
         self.folder_created = False
         self.buttons = []  # Button list
         self.camera_buttons = []
+
+
         # self.setup_emergency_stop()
         # Set up layouts
         main_layout = QHBoxLayout()
@@ -70,6 +80,41 @@ class CalibrationMain(QWidget):
         self.update_button_states()
 
         self.camera_update_button_states()
+        self.calv_img()
+    def calv_img(self):
+        # 켈리브레이션 이미지 저장
+        desired_aruco_dictionary = "DICT_7X7_50"
+        # The different ArUco dictionaries built into the OpenCV library.
+        ARUCO_DICT = {
+            "DICT_4X4_50": cv2.aruco.DICT_4X4_50,
+            "DICT_4X4_100": cv2.aruco.DICT_4X4_100,
+            "DICT_4X4_250": cv2.aruco.DICT_4X4_250,
+            "DICT_4X4_1000": cv2.aruco.DICT_4X4_1000,
+            "DICT_5X5_50": cv2.aruco.DICT_5X5_50,
+            "DICT_5X5_100": cv2.aruco.DICT_5X5_100,
+            "DICT_5X5_250": cv2.aruco.DICT_5X5_250,
+            "DICT_5X5_1000": cv2.aruco.DICT_5X5_1000,
+            "DICT_6X6_50": cv2.aruco.DICT_6X6_50,
+            "DICT_6X6_100": cv2.aruco.DICT_6X6_100,
+            "DICT_6X6_250": cv2.aruco.DICT_6X6_250,
+            "DICT_6X6_1000": cv2.aruco.DICT_6X6_1000,
+            "DICT_7X7_50": cv2.aruco.DICT_7X7_50,
+            "DICT_7X7_100": cv2.aruco.DICT_7X7_100,
+            "DICT_7X7_250": cv2.aruco.DICT_7X7_250,
+            "DICT_7X7_1000": cv2.aruco.DICT_7X7_1000,
+            "DICT_ARUCO_ORIGINAL": cv2.aruco.DICT_ARUCO_ORIGINAL
+        }
+
+        if ARUCO_DICT.get(desired_aruco_dictionary, None) is None:
+            print("[INFO] ArUCo tag of '{}' is not supported".format(args["type"]))
+            sys.exit(0)
+        #opencv 4.6 이하에서 동작, 4.7 이상 X
+
+        # Load the ArUco dictionary
+        print("[INFO] detecting '{}' markers...".format(desired_aruco_dictionary))
+        self.this_aruco_dictionary = cv2.aruco.Dictionary_get(ARUCO_DICT[desired_aruco_dictionary])
+        self.this_aruco_parameters = cv2.aruco.DetectorParameters_create()
+
     def setup_left_panel(self, layout):
         layout.addSpacing(50)
 
@@ -374,7 +419,7 @@ class CalibrationMain(QWidget):
     def save_image(self):
         if hasattr(self, 'folder_path'):
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-            calibration_image, total_cam, R_inv, robot_position = self.video_thread.get_camera_data()
+            calibration_image, total_cam, R_inv, robot_position = self.get_camera_data()
 
             # Make a directory for this timestamp
             timestamp_dir = os.path.join(self.folder_path, timestamp)
@@ -540,7 +585,171 @@ class CalibrationMain(QWidget):
         self.set_connection_state(False)
         self.connect_button.clicked.connect(self.on_connect_button_clicked)  # Button action 변경
 
+    # 켈리브레이션 코드
+    def get_camera_data(self):
+        # Create a config and configure the pipeline to stream
+        # different resolutions of color and depth streams
+        config = self.video_thread.config
+        t = time.time()
 
+        # Get device product line for setting a supporting resolution
+        pipeline_wrapper = rs.pipeline_wrapper(self.video_thread.pipeline)
+        pipeline_profile = config.resolve(pipeline_wrapper)
+        device = pipeline_profile.get_device()
+        device_product_line = str(device.get_info(rs.camera_info.product_line))
+
+        found_rgb = False
+        for s in device.sensors:
+            if s.get_info(rs.camera_info.name) == 'RGB Camera':
+                found_rgb = True
+                break
+        if not found_rgb:
+            print("The demo requires Depth camera with Color sensor")
+            exit(0)
+
+        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+
+        if device_product_line == 'L500':
+            config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+        else:
+            config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+
+        # Start streaming
+        # profile = self.pipeline.start(config)
+
+        # Getting the depth sensor's depth scale (see rs-align example for explanation)
+        depth_sensor = self.video_thread.profile.get_device().first_depth_sensor()
+        depth_scale = depth_sensor.get_depth_scale()
+        print("Depth Scale is: " , depth_scale)
+
+        # We will be removing the background of objects more than
+        # clipping_distance_in_meters meters away
+        clipping_distance_in_meters = 1 #1 meter
+        clipping_distance = clipping_distance_in_meters / depth_scale
+
+        # Create an align object
+        # rs.align allows us to perform alignment of depth frames to others frames
+        # The "align_to" is the stream type to which we plan to align depth frames.
+        align_to = rs.stream.color
+        align = rs.align(align_to)
+
+        elapsed_time_1 = time.time() - t
+        print(elapsed_time_1)
+
+        # Get frameset of color and depth
+        frames = self.video_thread.pipeline.wait_for_frames()
+        # frames.get_depth_frame() is a 640x360 depth image
+
+        # Align the depth frame to color frame
+        aligned_frames = align.process(frames)
+        print(aligned_frames)
+        # Get aligned frames
+        aligned_depth_frame = aligned_frames.get_depth_frame() # aligned_depth_frame is a 640x480 depth image
+        print(aligned_depth_frame)
+        color_frame = aligned_frames.get_color_frame()
+        print(color_frame)
+
+        # Validate that both frames are valid
+        if not aligned_depth_frame or not color_frame:
+            return None, None, None
+
+        depth_image = np.asanyarray(aligned_depth_frame.get_data()) * depth_scale
+        color_image = np.asanyarray(color_frame.get_data())
+
+        #Detect ArUco markers in the video frame
+        (corners_, ids_, rejected) = cv2.aruco.detectMarkers(
+            color_image, self.this_aruco_dictionary, parameters=self.this_aruco_parameters)
+        os.path.join("/home/ubuntu/DD", f"calibration_image.png")
+
+        ids_ = ids_.flatten()
+
+        df = pd.DataFrame([ids_, corners_]).transpose()
+        df.columns = ['ids', 'corners']
+        df.sort_values(by ='ids', inplace=True)
+
+        ids = np.array(df['ids'])
+        corners = np.array(df['corners'])
+
+        if len(corners) > 0:
+
+            # Flatten the ArUco IDs list
+            ids = ids.flatten()
+            top_right_cam =[]
+            top_left_cam =[]
+            bottom_right_cam = []
+            bottom_left_cam = []
+
+            # Loop over the detected ArUco corners
+            for (marker_corner, marker_id) in zip(corners, ids):
+
+                # Extract the marker corners
+                corners = marker_corner.reshape((4, 2))
+                (top_left, top_right, bottom_right, bottom_left) = corners
+
+                # Convert the (x,y) coordinate pairs to integers
+                top_right = (int(top_right[0]), int(top_right[1]))
+                bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+                bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+                top_left = (int(top_left[0]), int(top_left[1]))
+                print("marker_id:",marker_id)
+                print("top_right:",top_right)
+    #             print("top_left:",top_left)
+    #             print("bottom_right:",bottom_right)
+
+
+                # Convert (x,y,z) cam data in list
+                top_right_cam_tmp = [top_right[0]*depth_image[top_right[1],top_right[0]],top_right[1]*depth_image[top_right[1],top_right[0]],depth_image[top_right[1],top_right[0]]]
+                top_left_cam_tmp = [top_left[0]*depth_image[top_left[1],top_left[0]],top_left[1]*depth_image[top_left[1],top_left[0]],depth_image[top_left[1],top_left[0]]]
+                bottom_right_cam_tmp = [bottom_right[0]*depth_image[bottom_right[1],bottom_right[0]],bottom_right[1]*depth_image[bottom_right[1],bottom_right[0]],depth_image[bottom_right[1],bottom_right[0]]]
+                bottom_left_cam_tmp = [bottom_left[0]*depth_image[bottom_left[1],bottom_left[0]] ,bottom_left[1]*depth_image[bottom_left[1],bottom_left[0]] ,depth_image[bottom_left[1],bottom_left[0]]]
+
+                top_right_cam.append(top_right_cam_tmp)
+                top_left_cam.append(top_left_cam_tmp)
+                bottom_right_cam.append(bottom_right_cam_tmp)
+                bottom_left_cam.append(bottom_left_cam_tmp)
+
+                # Draw the bounding box of the ArUco detection
+                cv2.line(color_image, top_left, top_right, (0, 255, 0), 2)
+                cv2.line(color_image, top_right, bottom_right, (0, 255, 0), 2)
+                cv2.line(color_image, bottom_right, bottom_left, (0, 255, 0), 2)
+                cv2.line(color_image, bottom_left, top_left, (0, 255, 0), 2)
+
+                # Calculate and draw the center of the ArUco marker
+                center_x = int((top_left[0] + bottom_right[0]) / 2.0)
+                center_y = int((top_left[1] + bottom_right[1]) / 2.0)
+                cv2.circle(color_image, (center_x, center_y), 4, (0, 0, 255), -1)
+
+                # Draw the ArUco marker ID on the video frame
+                # The ID is always located at the top_left of the ArUco marker
+                cv2.putText(color_image, str(marker_id),
+                (top_left[0], top_left[1] - 15),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5, (0, 255, 0), 2)
+
+        # total_cam data size 4x16x4 , 1st 4 : x,y,z,1 // 2nd 16 : # of marker // 3rd 4 : corner point top_r, top_l, bot_r, bot_l
+            top_right_cam = np.array(top_right_cam)
+            top_left_cam = np.array(top_left_cam)
+            bottom_right_cam = np.array(bottom_right_cam)
+            bottom_left_cam = np.array(bottom_left_cam)
+            total_cam__ = np.dstack((top_right_cam, top_left_cam,bottom_right_cam, bottom_left_cam))
+            total_cam_ = np.transpose(total_cam__, (1,0,2))
+            total_cam = np.vstack((total_cam_, np.ones((1,np.size(total_cam_,1),np.size(total_cam_,2)))))
+            print_np(total_cam[:,:,0])
+
+        # robot_pose = rob.getl()
+        # robot_position = robot_pose[:3]
+        print(robot_pose)
+        # R_inv = cal_R_inv(robot_pose)
+
+        images = color_image
+
+        calibration_image = Image.fromarray(images)
+
+
+
+
+        # Assuming the ids, corners and depth_image are the required data
+        return calibration_image, total_cam, R_inv, robot_position
 
 
 
@@ -683,6 +892,7 @@ class CalibrationMain(QWidget):
         print("change to freedive mode")
         freedrive_duration = 10 # freedrive 모드 유지 시간 (초)
         self.robot.set_freedrive(True)
+
 
 
 class CircleWidget(QWidget):
