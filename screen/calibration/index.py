@@ -659,7 +659,6 @@ class CalibrationMain(QWidget):
         #Detect ArUco markers in the video frame
         (corners_, ids_, rejected) = cv2.aruco.detectMarkers(
             color_image, self.this_aruco_dictionary, parameters=self.this_aruco_parameters)
-        os.path.join("/home/ubuntu/DD", f"calibration_image.png")
 
         ids_ = ids_.flatten()
 
@@ -734,7 +733,7 @@ class CalibrationMain(QWidget):
             total_cam__ = np.dstack((top_right_cam, top_left_cam,bottom_right_cam, bottom_left_cam))
             total_cam_ = np.transpose(total_cam__, (1,0,2))
             total_cam = np.vstack((total_cam_, np.ones((1,np.size(total_cam_,1),np.size(total_cam_,2)))))
-            print_np(total_cam[:,:,0])
+            self.print_np(total_cam[:,:,0])
 
         # robot_pose = rob.getl()
         # robot_position = robot_pose[:3]
@@ -751,7 +750,10 @@ class CalibrationMain(QWidget):
         # Assuming the ids, corners and depth_image are the required data
         return calibration_image, total_cam, R_inv, robot_position
 
-
+    def print_np(x):
+        print("Type is %s" %(type(x)))
+        print("Shape is %s" % (x.shape,))
+        print("Values are: \n%s" % (x))
 
     # 로봇 좌표 움직임 컨트롤러
 
