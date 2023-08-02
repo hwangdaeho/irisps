@@ -1,0 +1,54 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>image/folder-add.svg</file>
+    <file>image/folder-add2.svg</file>
+    <file>image/camera.svg</file>
+    <file>image/camera2.svg</file>
+    <file>image/logo.png</file>
+    <file>image/arrow-down.svg</file>
+    <file>image/gallery.svg</file>
+    <file>image/gallery2.svg</file>
+    <file>image/icon_camera.svg</file>
+    <file>image/icon_monitor.svg</file>
+    <file>image/icon_routing.svg</file>
+    <file>image/line_shield-tick.svg</file>
+    <file>image/line_video-octagon.svg</file>
+    <file>image/line_video.svg</file>
+    <file>image/logo.svg</file>
+    <file>image/menu_fi_square.svg</file>
+    <file>image/menu_fi_x.svg</file>
+    <file>image/menu_minus.svg</file>
+    <file>image/shield-tick.svg</file>
+    <file>image/shield-tick2.svg</file>
+    <file>image/video-octagon.svg</file>
+    <file>image/video-octagon2.svg</file>
+    <file>image/video.svg</file>
+    <file>image/video2.svg</file>
+    <file>image/null.png</file>
+    <file>image/ImageGuide.png</file>
+    <file>image/Classification.png</file>
+    <file>image/ObjectDetection.png</file>
+    <file>image/Segmentation.png</file>
+    <file>image/Step1.jpg</file>
+    <file>image/Step2.jpg</file>
+    <file>image/Step3.jpg</file>
+    <file>image/position/arrow-down.svg</file>
+    <file>image/position/arrow-left.svg</file>
+    <file>image/position/arrow-up.svg</file>
+    <file>image/position/arrow-right.svg</file>
+    <file>image/position/button-Free.svg</file>
+    <file>image/position/turn-left.svg</file>
+    <file>image/position/turn-right.svg</file>
+    <file>image/position/TCP-Position.svg</file>
+
+    <file>image/Orientation/arrow-down.svg</file>
+    <file>image/Orientation/arrow-left.svg</file>
+    <file>image/Orientation/arrow-up.svg</file>
+    <file>image/Orientation/arrow-right.svg</file>
+    <file>image/Orientation/button-down.svg</file>
+    <file>image/Orientation/button-up.svg</file>
+    <file>image/Orientation/TCP-Orientation.svg</file>
+    <file>image/Speed.svg</file>
+
+</qresource>
+</RCC>
