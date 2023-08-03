@@ -305,39 +305,15 @@ for i in range(len(data_cam_list)):
     print("cal_position_y :" , cal_position_y)
     print("cal_position_z :" , cal_position_z)
 
-
-#     top_right = total_cam[:,:,0]
-#     top_left = total_cam[:,:,1]
-#     bottom_right = total_cam[:,:,2]
     bottom_left = total_cam[:,:,3]
 #     cam_data_mat_ = np.hstack((top_right,top_left,bottom_right,bottom_left))
 
 #     cam_data_mat_ = top_right
     cam_data_mat_ = bottom_left
-#     cam_data_mat_ = bottom_right
-#     robot_data_x = np.array([85,85,85,85,155,155,155,155,225,225,225,225,295,295,295,295]) + cal_position_x
-#     robot_data_y = np.array([75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,75,5,-65,-135]) + cal_position_y
 
-#     robot_data_z = np.ones(len(robot_data_x)) * 10 + cal_position_z
-#     robot_data_x = np.array([85,85,85,85,155,155,155,155,225,225,225,225,295,295,295,295])
-#     robot_data_y = np.array([75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,75,5,-65,-135])
-
-#     robot_data_x = np.array([75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,75,5,-65,-135])
-#     robot_data_y = np.array([-85,-85,-85,-85,-155,-155,-155,-155,-225,-225,-225,-225,-295,-295,-295,-295])
     #bottom_left
     robot_data_x = np.array([135 ,65,-5,-75,135 ,65,-5,-75,135 ,65,-5,-75,135 ,65,-5,-75])
     robot_data_y = np.array([-175,-175,-175,-175,-245,-245,-245,-245,-315,-315,-315,-315,-385,-385,-385,-385])
-#     robot_data_x = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-#     robot_data_y = np.array([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-
-#     robot_data_x = np.array([85,85,85,85,155,155,155,155,225,225,225,225,295,295,295,295,\
-#                             85,85,85,85,155,155,155,155,225,225,225,225,295,295,295,295,\
-#                             145,145,145,145,215,215,215,215,285,285,285,285,355,355,355,355,\
-#                             145,145,145,145,215,215,215,215,285,285,285,285,355,355,355,355])
-#     robot_data_y = np.array([75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,\
-#                              135,65,-5,-75,135,65,-5,-75,135,65,-5,-75,135,65,-5,-75,\
-#                              75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,75,5,-65,-135,\
-#                              135,65,-5,-75,135,65,-5,-75,135,65,-5,-75,135,65,-5,-75])
 
 
     robot_data_z = np.ones(len(robot_data_x)) * 10

@@ -26,9 +26,30 @@ def create_side_menu(stacked_widget, main_window):
             main_window.update_header("이미지 학습 촬영", "screen/image_shoot/step/step1.py", "GuideScreen"),
             button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: #ffffff; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
             button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
+            button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
+            button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
+        ]
+    )
+
+    button4 = QToolButton()
+    button4.setText('크롭')
+    button4.setIcon(QIcon(":image/icon_camera.svg"))  # 아이콘을 설정합니다.
+    button4.setIconSize(QSize(icon_size, icon_size))  # 아이콘의 크기를 설정합니다.
+    button4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # 아이콘을 글자 위에 배치합니다.
+    button4.setFixedHeight(button_height)
+    button4.setFixedWidth(button_width)
+    button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: white; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
+    button4.clicked.connect(
+        lambda: [
+            main_window.load_screen_from_path('screen/crop/index.py', 'CropMain'),
+            main_window.update_header_text("크롭"),
+            button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #ffffff; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
+            button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
+            button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
             button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
         ]
     )
+
     button2 = QToolButton()
     button2.setText('켈리브레이션')
     button2.setIcon(QIcon(":image/icon_routing.svg"))  # 아이콘을 설정합니다.
@@ -44,7 +65,8 @@ def create_side_menu(stacked_widget, main_window):
             main_window.update_header("캘리브레이션", "screen/calibration/step/step1.py", "GuideScreen"),
             button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #ffffff; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
             button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
-            button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
+            button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
+            button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
         ]
     )
 
@@ -63,11 +85,13 @@ def create_side_menu(stacked_widget, main_window):
             main_window.update_header("실시간 모니터링 & 운영", 'screen/inference/category.py', 'Category'),
             button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: white; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
             button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
-            button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
+            button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
+            button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size))
         ]
     )
 
     layout.addWidget(button1)
+    layout.addWidget(button4)
     layout.addWidget(button2)
     layout.addWidget(button3)
     layout.setAlignment(Qt.AlignCenter)

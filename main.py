@@ -5,6 +5,7 @@ from side_menu import create_side_menu
 from screen.image_shoot.index import ImageMain
 from screen.calibration.index import CalibrationMain
 from screen.inference.index import InferenceMain
+from screen.crop.index import CropMain
 import importlib.util
 from PySide6.QtWidgets import QWidget
 import resources
@@ -15,26 +16,20 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowTitle("이미지 촬영")
         self.setWindowIcon(QIcon(":/image/logo.png"))
-        print('1')
         self.inference_main = InferenceMain()  # Add this line
-        print('2')
         self.initUI()
 
     def initUI(self):
         self.resize_screen(80)
         self.center()
 
-        print('3')
         self.stacked_widget = QStackedWidget()
-        print('4')
         self.ImageMain = ImageMain()
-        print('5')
         self.CalibrationMain = CalibrationMain()
-        print('6')
+        self.CropMain = CropMain()
         self.stacked_widget.addWidget(self.ImageMain)  # ImageMain is added first
-        print('7')
         self.stacked_widget.addWidget(self.CalibrationMain)
-        print('8')
+        self.stacked_widget.addWidget(self.CropMain)
         self.header_label = QLabel("이미지 촬영")
         self.header_label.setStyleSheet("color: #FFFFFF; font-size: 18px; margin-left: 10px;")
 
@@ -44,7 +39,6 @@ class MainWindow(QMainWindow):
         logo_image = QPixmap(":image/logo.svg")
         logo_label.setPixmap(logo_image)
         logo_label.setStyleSheet("margin-left:16px;")
-        print('9')
 
         # Create a big header
         big_header_label = QLabel("Big Header")
@@ -57,7 +51,6 @@ class MainWindow(QMainWindow):
         big_header_layout.addWidget(big_header_label)
         big_header.setLayout(big_header_layout)
 
-        print('10')
         # Create a header widget
         header_widget = QWidget()
         header_widget.setStyleSheet("background-color: #B50039;")  # blue color for header
@@ -73,19 +66,13 @@ class MainWindow(QMainWindow):
         self.guide_button.setFixedSize(100, 40)
         self.guide_button.setStyleSheet("background-color: white; color: #B50039; font-weight: bold;")
         self.update_header("이미지 학습 촬영", "screen/image_shoot/step/step1.py", "GuideScreen")
-        print('11')
 
         header_layout.addWidget(self.guide_button)
-        print('12')
         header_widget.setLayout(header_layout)
-        print('13')
         header_widget.setFixedHeight(70)
-        print('14')
         side_menu = create_side_menu(self.stacked_widget, self)
         side_menu.setStyleSheet("background-color: #F7F7F7;")  # green color for side menu
         side_menu.setContentsMargins(0, 0, 0, 0)  # Remove margins
-        print('15')
-
         # Create right layout
         right_layout = QVBoxLayout()
         right_layout.addWidget(header_widget)

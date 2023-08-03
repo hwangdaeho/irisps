@@ -380,6 +380,105 @@ class CalibrationMain(QWidget):
 
 
     def calibration_connect(self):
+        if hasattr(self, 'folder_path'):
+            first_directory = True
+            for root, dirs, files in os.walk(self.folder_path):
+                for dir_name in dirs:
+                    dir_path = os.path.join(root, dir_name)
+                    data_list = sorted(os.listdir(dir_path))
+
+                    # 키워드를 기반으로 파일 경로 찾기
+                    total_cam_path = [os.path.join(dir_path, file) for file in os.listdir(dir_path) if 'total_cam' in file][0]
+                    R_inv_path = [os.path.join(dir_path, file) for file in os.listdir(dir_path) if 'R_inv' in file][0]
+                    robot_position_path = [os.path.join(dir_path, file) for file in os.listdir(dir_path) if 'robot_position' in file][0]
+                    print("Total Cam Path:", total_cam_path)
+                    print("R_inv Path:", R_inv_path)
+                    print("Robot Position Path:", robot_position_path)
+                    total_cam = np.load(total_cam_path)
+                    R_inv = np.load(R_inv_path)
+                    robot_position = np.load(robot_position_path)
+                    cal_position_x = np.array(robot_position[0]*1000)
+                    cal_position_y = np.array(robot_position[1]*1000)
+                    cal_position_z = np.array(robot_position[2]*1000)
+                    # print("cal_position_x :" , cal_position_x)
+                    # print("cal_position_y :" , cal_position_y)
+                    # print("cal_position_z :" , cal_position_z)
+
+                    bottom_left = total_cam[:,:,3]
+                #     cam_data_mat_ = np.hstack((top_right,top_left,bottom_right,bottom_left))
+
+                #     cam_data_mat_ = top_right
+                    cam_data_mat_ = bottom_left
+
+                    #bottom_left
+                    robot_data_x = np.array([135 ,65,-5,-75,135 ,65,-5,-75,135 ,65,-5,-75,135 ,65,-5,-75])
+                    robot_data_y = np.array([-175,-175,-175,-175,-245,-245,-245,-245,-315,-315,-315,-315,-385,-385,-385,-385])
+
+
+                    robot_data_z = np.ones(len(robot_data_x)) * 10
+
+                    robot_data_mat_ = np.vstack([robot_data_x,robot_data_y,robot_data_z, np.ones(len(robot_data_x))])
+                    print("robot_data_mat_ :", robot_data_mat_)
+
+                    robot_data_mat_ = np.matmul(R_inv, robot_data_mat_)
+                    print("robot_data_mat_ :", robot_data_mat_)
+                    robot_data_mat_[0,:] = robot_data_mat_[0,:] + cal_position_x
+                    robot_data_mat_[1,:] = robot_data_mat_[1,:] + cal_position_y
+                    robot_data_mat_[2,:] = robot_data_mat_[2,:] + cal_position_z
+
+
+                    if first_directory:
+                        cam_data_mat = cam_data_mat_
+                        robot_data_mat = robot_data_mat_
+                        first_directory = False
+                    else:
+                        cam_data_mat = np.hstack((cam_data_mat, cam_data_mat_))
+                        robot_data_mat = np.hstack((robot_data_mat, robot_data_mat_))
+            print("앙랑랑랑")
+            self.print_np(cam_data_mat)
+            self.print_np(robot_data_mat)
+
+            # l515 1280 x 720
+            cam_intrin_mat = np.array([[906.3367309570312, 0, 659.4196166992188, 0],[0,906.8651123046875,351.5494384765625,0],[0,0,1,0],[0,0,0,1]])
+            self.print_np(cam_intrin_mat)
+
+            # l515 1920 x 1080
+            # cam_intrin_mat = np.array([[1359.57080078125, 0, 976.2681274414062, 0],[0,1359.7188720703125,545.0499267578125,0],[0,0,1,0],[0,0,0,1]])
+            # print_np(cam_intrin_mat)
+
+            inv_cam_intrin_mat = lin.inv(cam_intrin_mat)
+            # print_np(inv_cam_intrin_mat)
+            inv_robot_data_mat = lin.pinv(robot_data_mat)
+            print("Shape of cal_mat_tmp:", cam_data_mat.shape)
+            print("Shape of inv_robot_data_mat:", inv_robot_data_mat.shape)
+
+            cal_mat_tmp = np.matmul(inv_cam_intrin_mat,cam_data_mat)
+            cal_mat = np.matmul(cal_mat_tmp,inv_robot_data_mat) #Extrinsic
+            # print_np(cal_mat)
+
+            inv_cal_mat = lin.inv(cal_mat) #최종 아웃풋
+            # print_np(inv_cal_mat)
+
+            cam_data_mat_calculated_tmp = np.matmul(inv_cam_intrin_mat,cam_data_mat)
+            cam_data_mat_calculated = np.matmul(inv_cal_mat,cam_data_mat_calculated_tmp)
+            # print_np(robot_data_mat)
+            # print_np(cam_data_mat_calculated)
+
+            dif_cam_robot = (robot_data_mat - cam_data_mat_calculated)**2
+            # dif_cam_robot = (robot_data_mat[:1,:] - cam_data_mat_calculated[:1,:])**2
+            # dif_cam_robot = (robot_data_mat[1:2,:] - cam_data_mat_calculated[1:2,:])**2
+            # dif_cam_robot = (robot_data_mat[2:3,:] - cam_data_mat_calculated[2:3,:])**2
+            dif_cam_robot_distance = np.sqrt(np.sum(dif_cam_robot,axis=0))
+            # dif_cam_robot_distance = np.sqrt(dif_cam_robot)
+            print("Min difference: {} mm".format(np.min(dif_cam_robot_distance)))
+            print("Max difference: {} mm".format(np.max(dif_cam_robot_distance)))
+            print("Mean difference: {} mm".format(np.mean(dif_cam_robot_distance)))
+            print("앙랑랑랑")
+        else:
+            QMessageBox.information(self, "No folder selected", "Please create a folder first.")
+            # 나머지 로직은 위에서 주어진 코드와 동일합니다.
+
+        # 결과를 반환하거나 저장합니다.
 
         # 가운데 정렬
         self.black_background_text.setAlignment(Qt.AlignCenter)
@@ -399,6 +498,7 @@ class CalibrationMain(QWidget):
                 self.folder_path = folder_path
                 self.folder_created = True
                 self.camera_update_button_states()  # Update button states
+
     def camera_update_button_states(self):
         self.camera_buttons[0].setEnabled(True)  # '카메라 연결' button
         self.camera_buttons[1].setEnabled(self.camera_connected)  # '생성' button
@@ -585,7 +685,7 @@ class CalibrationMain(QWidget):
         self.set_connection_state(False)
         self.connect_button.clicked.connect(self.on_connect_button_clicked)  # Button action 변경
 
-    # 켈리브레이션 코드
+    # 켈리브레이션 이미지 저장 코드
     def get_camera_data(self):
         # Create a config and configure the pipeline to stream
         # different resolutions of color and depth streams
