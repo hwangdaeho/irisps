@@ -134,8 +134,9 @@ class CropMain(QWidget):
 
     def mousePressEvent(self, event):
         self.mouse_pressed = True
-        self.x1, self.y1 = self.scale_coordinates(event.x(), event.y())
-        self.x2, self.y2 = self.scale_coordinates(event.x(), event.y())
+        label_position = self.image_label.mapFromGlobal(event.globalPos())
+        self.x1, self.y1 = self.scale_coordinates(label_position.x(), label_position.y())
+        self.x2, self.y2 = self.scale_coordinates(label_position.x(), label_position.y())
 
     def mouseMoveEvent(self, event):
         if self.mouse_pressed:  # 드래그 중에는 초록색 박스를 업데이트하여 표시
@@ -188,14 +189,14 @@ class CropMain(QWidget):
 
             # 크롭된 이미지를 오른쪽 화면 크기로 확대
             target_width, target_height = self.image_label_raw.width(), self.image_label_raw.height()
-            resized_cropped_masked_frame = cv2.resize(cropped_masked_frame, (target_width, target_height))
+
 
             # 마스크 초기화
             if self.mask is None:
                 self.mask = self.init_mask(cropped_color_image)
 
             # 이진화된 마스크
-            gray_mask = cv2.cvtColor(resized_cropped_masked_frame, cv2.COLOR_BGR2GRAY)
+            gray_mask = cv2.cvtColor(cropped_masked_frame, cv2.COLOR_BGR2GRAY)
             _, binary_mask = cv2.threshold(gray_mask, 1, 255, cv2.THRESH_BINARY)
 
             # 각각의 분할된 객체를 찾음
@@ -217,7 +218,7 @@ class CropMain(QWidget):
 
                     # 중심 좌표 출력
                     print("Center Coordinates:", center_x, center_y)
-
+            resized_cropped_masked_frame = cv2.resize(cropped_masked_frame, (target_width, target_height))
             # 선택된 영역을 오른쪽 화면에 표시
             self.display_frame(self.image_label_raw, resized_cropped_masked_frame)
         else:
