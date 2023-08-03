@@ -180,16 +180,22 @@ class CropMain(QWidget):
             cv2.rectangle(color_image, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 0), 2)
         self.display_frame(self.image_label, color_image)
         # 드래그가 끝나면 해당 영역을 선택
+
         if not self.mouse_pressed and self.x1 != -1 and self.y1 != -1 and self.x2 != -1 and self.y2 != -1:
             cropped_color_image = color_image[self.y1:self.y2, self.x1:self.x2]
+
             cropped_masked_frame = masked_frame[self.y1:self.y2, self.x1:self.x2]
+
+            # 크롭된 이미지를 오른쪽 화면 크기로 확대
+            target_width, target_height = self.image_label_raw.width(), self.image_label_raw.height()
+            resized_cropped_masked_frame = cv2.resize(cropped_masked_frame, (target_width, target_height))
 
             # 마스크 초기화
             if self.mask is None:
                 self.mask = self.init_mask(cropped_color_image)
 
             # 이진화된 마스크
-            gray_mask = cv2.cvtColor(cropped_masked_frame, cv2.COLOR_BGR2GRAY)
+            gray_mask = cv2.cvtColor(resized_cropped_masked_frame, cv2.COLOR_BGR2GRAY)
             _, binary_mask = cv2.threshold(gray_mask, 1, 255, cv2.THRESH_BINARY)
 
             # 각각의 분할된 객체를 찾음
@@ -213,7 +219,7 @@ class CropMain(QWidget):
                     print("Center Coordinates:", center_x, center_y)
 
             # 선택된 영역을 오른쪽 화면에 표시
-            self.display_frame(self.image_label_raw, cropped_masked_frame)
+            self.display_frame(self.image_label_raw, resized_cropped_masked_frame)
         else:
             # 마우스 드래그 영역에 대한 이미지를 왼쪽 화면에 표시
             self.display_frame(self.image_label, temp_frame)
