@@ -102,9 +102,14 @@ class CropMain(QWidget):
                     self.current_camera_instance = CropMain()
                     self.pipeline = rs.pipeline()  # 초기화
                     config = rs.config()
-                    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-                    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-                    self.pipeline.start(config)
+                    cfg = self.pipeline.start(config)
+                    pipeline = rs.pipeline()
+                    color_profile = cfg.get_stream(rs.stream.color) # Fetch stream profile for depth stream
+                    depth_profile = cfg.get_stream(rs.stream.depth) # Fetch stream profile for depth stream
+                    color_intrinsic = color_profile.as_video_stream_profile().get_intrinsics()
+                    depth_intrinsic = depth_profile.as_video_stream_profile().get_intrinsics()
+                    config.enable_stream(rs.stream.color, color_intrinsic.width, color_intrinsic.height, rs.format.bgr8, 30)
+                    config.enable_stream(rs.stream.depth, depth_intrinsic.width, depth_intrinsic.height, rs.format.z16, 30)
                     self.timer.start(30)  # 30ms마다 프레임 업데이트
                     self.button.setText("연결 해제")
                     self.camera_connected = True
