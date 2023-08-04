@@ -36,9 +36,17 @@ class VideoThread(QThread):
         self.timer.start(1000 / 30)  # Start the timer to call update_frame 30 times per second
         self.pipeline = rs.pipeline()
         self.config = rs.config()
-        self.profile = None
 
-        print('VideoThread')
+        self.profile = None
+        self.rs_width = None
+        self.rs_height = None
+
+        self.rs_ppx = None
+        self.rs_ppy = None
+        self.rs_fx = None
+        self.rs_fy = None
+
+
     def update_frame(self):
         self.mutex.lock()  # Lock the mutex
         is_connected = self.is_connected  # Store the flag value in a local variable
@@ -48,16 +56,16 @@ class VideoThread(QThread):
         if is_connected:
             frames = self.pipeline.wait_for_frames()
             color_frame = frames.get_color_frame()
-
             if not color_frame:
                 return
-
             color_image = np.asanyarray(color_frame.get_data())
             rgbImage = color_image
             h, w, ch = rgbImage.shape
             bytesPerLine = ch * w
             convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
-            p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
+
+            p = convertToQtFormat.scaled(self.rs_width, self.rs_height, Qt.KeepAspectRatio)
+
             self.changePixmap.emit(p)
             if is_recording and self.video_writer is not None:
                 bgr_frame = cv2.cvtColor(rgbImage, cv2.COLOR_RGB2BGR)
@@ -67,6 +75,15 @@ class VideoThread(QThread):
         self.mutex.lock()  # Lock the mutex
         try:
             self.profile = self.pipeline.start(self.config)
+            info = self.profile.get_stream(rs.stream.color) # Fetch stream profile for depth stream
+            depth_intrinsic = info.as_video_stream_profile().get_intrinsics()
+            self.rs_width = depth_intrinsic.width
+            self.rs_height = depth_intrinsic.height
+            self.rs_ppx = depth_intrinsic.ppx
+            self.rs_ppy = depth_intrinsic.ppy
+            self.rs_fx = depth_intrinsic.fx
+            self.rs_fy = depth_intrinsic.fy
+
             self.is_connected = True
             return True  # Add this line
         except RuntimeError as e:

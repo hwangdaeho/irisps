@@ -6,14 +6,13 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QW
 from PySide6.QtGui import QImage, QPixmap, QIcon
 from PySide6.QtCore import Qt, QTimer, Slot, QSize
 from screen.video_manager import VideoManager
+from PySide6.QtCore import Signal
 class CropMain(QWidget):
     def __init__(self, parent=None, stacked_widget=None, main_window=None):
         print("Initializing CropMain...")
         super().__init__(parent)
-        self.camera_connected = False
         # 카메라 관련 변수
         self.pipeline = None
-        self.camera_connected = False
         self.mask = None
         # 드래그 상태 관련 변수
         self.mouse_pressed = False
@@ -22,6 +21,8 @@ class CropMain(QWidget):
         self.initUI()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
+        self.camera_connected = False
+
 
 
 
@@ -98,6 +99,7 @@ class CropMain(QWidget):
                 camera_name, ok = QInputDialog.getItem(self, "Connect to camera", "Choose a camera:", camera_names, 0, False)
 
                 if ok and camera_name:
+                    self.current_camera_instance = CropMain()
                     self.pipeline = rs.pipeline()  # 초기화
                     config = rs.config()
                     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
@@ -106,20 +108,21 @@ class CropMain(QWidget):
                     self.timer.start(30)  # 30ms마다 프레임 업데이트
                     self.button.setText("연결 해제")
                     self.camera_connected = True
-                    if connected:
-                        self.button.setText("연결 해제")  # Change the button text
-                        self.camera_connected = True
+                    print('크롭 카메라 커넥티드')
+                    print(self.camera_connected)
             else:
                 QMessageBox.information(self, "No cameras found", "No cameras were found. Please connect a camera and try again.")
                 self.show_placeholder_image()  # Add this line
 
     def disconnect_camera(self):
+        print("Attempting to disconnect camera...")  # 로그 추가
         if self.pipeline:
             self.pipeline.stop()
             self.pipeline = None
         self.timer.stop()
         self.button.setText("카메라 연결")
         self.camera_connected = False
+        print("Camera disconnected successfully.")  # 로그 추가
     def show_placeholder_image(self):
         # Load your placeholder image
         placeholder = QImage(":image/null.png")
@@ -172,8 +175,6 @@ class CropMain(QWidget):
         label_height = self.image_label.height()
         frame_height, frame_width, _ = color_image.shape
 
-        print(f"Label size: {label_width}x{label_height}")
-        print(f"Frame size: {frame_width}x{frame_height}")
         # 드래그하는 동안에만 초록색 사각형을 표시
         temp_frame = color_image.copy()
         if self.mouse_pressed and self.x1 != -1 and self.y1 != -1:
@@ -251,6 +252,3 @@ class CropMain(QWidget):
         q_img = QImage(frame.data, width, height, bytes_per_line, QImage.Format_RGB888)
         q_pixmap = QPixmap.fromImage(q_img)
         label.setPixmap(q_pixmap)
-
-
-

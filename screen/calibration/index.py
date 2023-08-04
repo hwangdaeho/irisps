@@ -434,12 +434,13 @@ class CalibrationMain(QWidget):
                     else:
                         cam_data_mat = np.hstack((cam_data_mat, cam_data_mat_))
                         robot_data_mat = np.hstack((robot_data_mat, robot_data_mat_))
-            print("앙랑랑랑")
+
             self.print_np(cam_data_mat)
             self.print_np(robot_data_mat)
 
+
             # l515 1280 x 720
-            cam_intrin_mat = np.array([[906.3367309570312, 0, 659.4196166992188, 0],[0,906.8651123046875,351.5494384765625,0],[0,0,1,0],[0,0,0,1]])
+            cam_intrin_mat = np.array([[self.video_thread.rs_fx, 0, self.video_thread.rs_ppx, 0],[0,self.video_thread.rs_fy,self.video_thread.rs_ppy,0],[0,0,1,0],[0,0,0,1]])
             self.print_np(cam_intrin_mat)
 
             # l515 1920 x 1080
@@ -473,18 +474,18 @@ class CalibrationMain(QWidget):
             print("Min difference: {} mm".format(np.min(dif_cam_robot_distance)))
             print("Max difference: {} mm".format(np.max(dif_cam_robot_distance)))
             print("Mean difference: {} mm".format(np.mean(dif_cam_robot_distance)))
-            print("앙랑랑랑")
+            # 가운데 정렬
+            self.black_background_text.setAlignment(Qt.AlignCenter)
+            # 텍스트
+            text = "글자 여기"
+            self.black_background_text.setText(np.max(dif_cam_robot_distance))
         else:
             QMessageBox.information(self, "No folder selected", "Please create a folder first.")
             # 나머지 로직은 위에서 주어진 코드와 동일합니다.
 
         # 결과를 반환하거나 저장합니다.
 
-        # 가운데 정렬
-        self.black_background_text.setAlignment(Qt.AlignCenter)
-        # 텍스트
-        text = "글자 여기"
-        self.black_background_text.setText(text)
+
 
 
 
@@ -664,9 +665,9 @@ class CalibrationMain(QWidget):
                 self.connect_button.setText('해제')  # Button text 변경
                 # self.connect_button.disconnect()  # disconnect all slots
                 self.connect_button.clicked.connect(self.on_disconnect_button_clicked)  # Button action 변경
-                print("moving to initial pose")
-                self.robot.movej((90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), 90*(self.pi/180), 0*(self.pi/180)), acc=self.ACCELERATION, vel=self.VELOCITY, wait=False)
-                print("Waiting 1s for end move")
+                # print("moving to initial pose")
+                # self.robot.movej((90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), -90*(self.pi/180), 90*(self.pi/180), 0*(self.pi/180)), acc=self.ACCELERATION, vel=self.VELOCITY, wait=False)
+                # print("Waiting 1s for end move")
                 # time.sleep(1)
             except Exception as e:
                 # If the connection failed, show an error message
@@ -707,7 +708,7 @@ class CalibrationMain(QWidget):
             print("The demo requires Depth camera with Color sensor")
             exit(0)
 
-        config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        config.enable_stream(rs.stream.depth, self.video_thread.rs_width, self.video_thread.rs_height, rs.format.z16, 30)
 
         if device_product_line == 'L500':
             config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)

@@ -11,6 +11,7 @@ def create_side_menu(stacked_widget, main_window):
     icon_size = 40  # 아이콘의 크기를 지정합니다.
     font_size = 12  # 폰트의 크기를 지정합니다.
 
+
     button1 = QToolButton()
     button1.setText('학습 이미지 촬영')
     button1.setIcon(QIcon(":image/icon_camera.svg"))  # 아이콘을 설정합니다.
@@ -21,6 +22,7 @@ def create_side_menu(stacked_widget, main_window):
     button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: white; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
     button1.clicked.connect(
         lambda: [
+            main_window.disconnect_global_camera(),
             main_window.load_screen_from_path('screen/image_shoot/index.py', 'ImageMain'),
             main_window.update_header_text("이미지 촬영"),
             main_window.update_header("이미지 학습 촬영", "screen/image_shoot/step/step1.py", "GuideScreen"),
@@ -41,6 +43,7 @@ def create_side_menu(stacked_widget, main_window):
     button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: white; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
     button4.clicked.connect(
         lambda: [
+            main_window.disconnect_global_camera(),
             main_window.load_screen_from_path('screen/crop/index.py', 'CropMain'),
             main_window.update_header_text("크롭"),
             button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #ffffff; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),

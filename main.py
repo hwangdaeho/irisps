@@ -11,12 +11,15 @@ from PySide6.QtWidgets import QWidget
 import resources
 import os
 import sys
+import pyrealsense2 as rs
+from screen.video_manager import VideoManager
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowTitle("이미지 촬영")
         self.setWindowIcon(QIcon(":/image/logo.png"))
         self.inference_main = InferenceMain()  # Add this line
+        self.current_camera_instance = None
         self.initUI()
 
     def initUI(self):
@@ -101,6 +104,13 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(central_widget)
         self.show()
+    def disconnect_global_camera(self):
+        try:
+            self.video_manager = VideoManager()
+            self.video_thread = self.video_manager.get_video_thread()
+            self.video_thread.disconnect_camera()
+        except Exception as e:
+            print("Error disconnecting camera:", e)
 
 
     def resize_screen(self, percentage):
