@@ -440,7 +440,7 @@ class CalibrationMain(QWidget):
 
 
             # l515 1280 x 720
-            cam_intrin_mat = np.array([[self.video_thread.rs_fx, 0, self.video_thread.rs_ppx, 0],[0,self.video_thread.rs_fy,self.video_thread.rs_ppy,0],[0,0,1,0],[0,0,0,1]])
+            cam_intrin_mat = np.array([[self.video_thread.rs_color_fx, 0, self.video_thread.rs_color_ppx, 0],[0,self.video_thread.rs_color_fy,self.video_thread.rs_color_ppy,0],[0,0,1,0],[0,0,0,1]])
             self.print_np(cam_intrin_mat)
 
             # l515 1920 x 1080
@@ -708,12 +708,12 @@ class CalibrationMain(QWidget):
             print("The demo requires Depth camera with Color sensor")
             exit(0)
 
-        config.enable_stream(rs.stream.depth, self.video_thread.rs_width, self.video_thread.rs_height, rs.format.z16, 30)
+        config.enable_stream(rs.stream.depth, self.video_thread.rs_depth_width, self.video_thread.rs_depth_height, rs.format.z16, 30)
 
         if device_product_line == 'L500':
-            config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+            config.enable_stream(rs.stream.color, self.video_thread.rs_color_width, self.video_thread.rs_color_height, rs.format.rgb8, 30)
         else:
-            config.enable_stream(rs.stream.color, 1280, 720, rs.format.rgb8, 30)
+            config.enable_stream(rs.stream.color, self.video_thread.rs_color_width, self.video_thread.rs_color_height, rs.format.rgb8, 30)
 
         # Start streaming
         # profile = self.pipeline.start(config)

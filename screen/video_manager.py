@@ -38,13 +38,18 @@ class VideoThread(QThread):
         self.config = rs.config()
 
         self.profile = None
-        self.rs_width = None
-        self.rs_height = None
-
-        self.rs_ppx = None
-        self.rs_ppy = None
-        self.rs_fx = None
-        self.rs_fy = None
+        self.rs_color_width = None
+        self.rs_color_height = None
+        self.rs_color_ppx = None
+        self.rs_color_ppy = None
+        self.rs_color_fx = None
+        self.rs_color_fy = None
+        self.rs_depth_width = None
+        self.rs_depth_height = None
+        self.rs_depth_ppx = None
+        self.rs_depth_ppy = None
+        self.rs_depth_fx = None
+        self.rs_depth_fy = None
 
 
     def update_frame(self):
@@ -64,7 +69,7 @@ class VideoThread(QThread):
             bytesPerLine = ch * w
             convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
 
-            p = convertToQtFormat.scaled(self.rs_width, self.rs_height, Qt.KeepAspectRatio)
+            p = convertToQtFormat.scaled(self.rs_color_width, self.rs_color_height, Qt.KeepAspectRatio)
 
             self.changePixmap.emit(p)
             if is_recording and self.video_writer is not None:
@@ -75,14 +80,22 @@ class VideoThread(QThread):
         self.mutex.lock()  # Lock the mutex
         try:
             self.profile = self.pipeline.start(self.config)
-            info = self.profile.get_stream(rs.stream.color) # Fetch stream profile for depth stream
-            depth_intrinsic = info.as_video_stream_profile().get_intrinsics()
-            self.rs_width = depth_intrinsic.width
-            self.rs_height = depth_intrinsic.height
-            self.rs_ppx = depth_intrinsic.ppx
-            self.rs_ppy = depth_intrinsic.ppy
-            self.rs_fx = depth_intrinsic.fx
-            self.rs_fy = depth_intrinsic.fy
+            color_info = self.profile.get_stream(rs.stream.color) # Fetch stream profile for depth stream
+            color_intrinsic = color_info.as_video_stream_profile().get_intrinsics()
+            self.rs_color_width = color_intrinsic.width
+            self.rs_color_height = color_intrinsic.height
+            self.rs_color_ppx = color_intrinsic.ppx
+            self.rs_color_ppy = color_intrinsic.ppy
+            self.rs_color_fx = color_intrinsic.fx
+            self.rs_color_fy = color_intrinsic.fy
+            depth_info = self.profile.get_stream(rs.stream.depth) # Fetch stream profile for depth stream
+            depth_intrinsic = depth_info.as_video_stream_profile().get_intrinsics()
+            self.rs_depth_width = depth_intrinsic.width
+            self.rs_depth_height = depth_intrinsic.height
+            self.rs_depth_ppx = depth_intrinsic.ppx
+            self.rs_depth_ppy = depth_intrinsic.ppy
+            self.rs_depth_fx = depth_intrinsic.fx
+            self.rs_depth_fy = depth_intrinsic.fy
 
             self.is_connected = True
             return True  # Add this line
