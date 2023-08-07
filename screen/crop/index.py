@@ -7,24 +7,23 @@ from PySide6.QtGui import QImage, QPixmap, QIcon
 from PySide6.QtCore import Qt, QTimer, Slot, QSize
 from screen.video_manager import VideoManager
 from PySide6.QtCore import Signal
+from threading import Lock
 class CropMain(QWidget):
     def __init__(self, parent=None, stacked_widget=None, main_window=None):
         print("Initializing CropMain...")
         super().__init__(parent)
         # 카메라 관련 변수
-        self.pipeline = None
         self.mask = None
         # 드래그 상태 관련 변수
         self.mouse_pressed = False
         self.x1, self.y1, self.x2, self.y2 = -1, -1, -1, -1
+        self.lock = Lock()
 
         self.initUI()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
         self.camera_connected = False
-
-
-
+        self.pipeline = None
 
     def initUI(self):
         # Define a main vertical layout
@@ -99,15 +98,15 @@ class CropMain(QWidget):
                 camera_name, ok = QInputDialog.getItem(self, "Connect to camera", "Choose a camera:", camera_names, 0, False)
 
                 if ok and camera_name:
-                    self.current_camera_instance = CropMain()
-                    self.pipeline = rs.pipeline()  # 초기화
+                    self.pipeline = rs.pipeline()
                     config = rs.config()
                     cfg = self.pipeline.start(config)
-                    pipeline = rs.pipeline()
                     color_profile = cfg.get_stream(rs.stream.color) # Fetch stream profile for depth stream
                     depth_profile = cfg.get_stream(rs.stream.depth) # Fetch stream profile for depth stream
                     color_intrinsic = color_profile.as_video_stream_profile().get_intrinsics()
                     depth_intrinsic = depth_profile.as_video_stream_profile().get_intrinsics()
+                    print(color_intrinsic.width, color_intrinsic.height)
+                    print(color_intrinsic.width, color_intrinsic.height)
                     config.enable_stream(rs.stream.color, color_intrinsic.width, color_intrinsic.height, rs.format.bgr8, 30)
                     config.enable_stream(rs.stream.depth, depth_intrinsic.width, depth_intrinsic.height, rs.format.z16, 30)
                     self.timer.start(30)  # 30ms마다 프레임 업데이트
@@ -115,19 +114,29 @@ class CropMain(QWidget):
                     self.camera_connected = True
                     print('크롭 카메라 커넥티드')
                     print(self.camera_connected)
+                    # self.pipeline = rs.pipeline()
+
+
+                    # self.pipeline.start(config)  # 파이프라인 시작
+                    # config = rs.config()
+                    # config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)  # 예시 해상도
+                    # config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)   # 예시 해상도
+                    # self.timer.start(30)  # 30ms마다 프레임 업데이트
+                    # self.button.setText("연결 해제")
+                    # self.camera_connected = True
+                    # print('크롭 카메라 커넥티드')
+                    # print(self.camera_connected)
+
             else:
                 QMessageBox.information(self, "No cameras found", "No cameras were found. Please connect a camera and try again.")
                 self.show_placeholder_image()  # Add this line
 
     def disconnect_camera(self):
-        print("Attempting to disconnect camera...")  # 로그 추가
-        if self.pipeline:
-            self.pipeline.stop()
-            self.pipeline = None
-        self.timer.stop()
-        self.button.setText("카메라 연결")
-        self.camera_connected = False
-        print("Camera disconnected successfully.")  # 로그 추가
+        print('cccccroppppppp')
+        with self.lock:
+            if self.camera_connected:
+                self.pipeline.stop()
+                self.camera_connected = False
     def show_placeholder_image(self):
         # Load your placeholder image
         placeholder = QImage(":image/null.png")
@@ -162,6 +171,7 @@ class CropMain(QWidget):
         scale_y = frame_height / label_height
 
         return int(x * scale_x), int(y * scale_y)
+
     def update_frame(self):
         # 카메라로부터 프레임 획득
         frames = self.pipeline.wait_for_frames()

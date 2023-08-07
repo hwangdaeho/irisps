@@ -84,8 +84,6 @@ class ImageMain(QWidget):
         self.buttons[3].clicked.connect(self.handle_record_button_click)  # '영상 저장' 버튼 클릭 이벤트를 새로운 메소드에 연결합니다.
         self.buttons[4].clicked.connect(self.show_file_list)  # '완료' 버튼을 stop_recording 함수에 연결
 
-
-
         # Add the button layout to the main layout
         main_layout.addLayout(button_layout)
         main_layout.setSpacing(0)  # Set the space between the image label and the button layout
@@ -106,10 +104,12 @@ class ImageMain(QWidget):
 
         # Start the video thread
         self.video_thread.start()
+
     def guide_button_click(self):
         # 'capture_guide.png'는 촬영 가이드 이미지 파일의 경로입니다.
         self.guide_window = GuideWindow(':image/ImageGuide.png')
         self.guide_window.show()
+
     def handle_record_button_click(self):
         if self.video_thread.get_is_recording():  # 녹화가 이미 진행 중이라면
             print('stop')
@@ -117,6 +117,7 @@ class ImageMain(QWidget):
         else:  # 녹화가 진행 중이 아니라면
             print('start')
             self.start_recording()  # 녹화를 시작합니다.
+
     def start_recording(self):
         if hasattr(self, 'folder_path') and self.camera_connected:  # Only allow to start recording when the camera is connected and a folder is created
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -126,12 +127,14 @@ class ImageMain(QWidget):
             self.recording_timer.start(1000)  # Update every second
         else:
             QMessageBox.information(self, "No camera or folder", "Please connect a camera and create a folder first.")
+
     def update_recording_time(self):
         if self.recording_start_time is not None:
             self.recording_time += 1  # 녹화 시간 증가
             minutes, seconds = divmod( self.recording_time, 60)
             hours, minutes = divmod(minutes, 60)
             self.buttons[3].setText(f"{hours:02d}:{minutes:02d}:{seconds:02d}")
+
     def stop_recording(self):
         if self.camera_connected:  # Only allow to stop recording when the camera is connected
             self.video_thread.stop_recording()
@@ -152,6 +155,7 @@ class ImageMain(QWidget):
                 self.folder_path = folder_path
                 self.folder_created = True
                 self.update_button_states()  # Update button states
+
     def update_button_states(self):
         self.buttons[0].setEnabled(True)  # '카메라 연결' button
         self.buttons[1].setEnabled(self.camera_connected)  # '생성' button
@@ -168,6 +172,7 @@ class ImageMain(QWidget):
                 button.setEnabled(False)
                 button.setIcon(QIcon(self.disabled_icons[i]))  # Change this line
                 button.setStyleSheet('background-color: #2F2F2F; color: #525252; font-size:15px; padding: 19px 16px;border-top: 1.5px solid #2F2F2F;border-right: 1.5px solid #2F2F2F;border-bottom: 1.5px solid #2F2F2F;')  # Set the disabled button color
+
     def save_image(self):
         if hasattr(self, 'folder_path'):
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -178,6 +183,7 @@ class ImageMain(QWidget):
             self.toast.show()
         else:
             QMessageBox.information(self, "No folder selected", "Please create a folder first.")
+
     def show_file_list(self):
         if hasattr(self, 'folder_path'):
             self.file_list_window = FileDisplayWidget(self.folder_path)
@@ -297,7 +303,6 @@ class FileDisplayWidget(QWidget):
         self.load_files()
 
         main_layout = QVBoxLayout(self)
-
         button_layout_top = QHBoxLayout()
         button_layout_top.addWidget(self.image_button)
         button_layout_top.addWidget(self.video_button)

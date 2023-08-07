@@ -106,6 +106,8 @@ class MainWindow(QMainWindow):
         self.show()
     def disconnect_global_camera(self):
         try:
+            self.CropMain.disconnect_camera() # CropMain 클래스의 카메라 연결 끊기 메서드 호출
+            self.inference_main.thread.disconnect_camera()
             self.video_manager = VideoManager()
             self.video_thread = self.video_manager.get_video_thread()
             self.video_thread.disconnect_camera()
@@ -172,9 +174,6 @@ class MainWindow(QMainWindow):
 
         return screen_class(self.stacked_widget, self)  # pass the required arguments
 
-
-
-        return screen_class()
 
 if __name__ == '__main__':
     print("Before creating QApplication: ", QApplication.instance())

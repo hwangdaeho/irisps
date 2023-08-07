@@ -24,6 +24,7 @@ import numpy.linalg as lin
 from PIL import Image
 from PIL import ImageDraw
 import time
+import subprocess
 # import URBasic
 import cv2
 import matplotlib.pyplot as plt
@@ -65,8 +66,6 @@ class CalibrationMain(QWidget):
         self.ACCELERATION = self.VELOCITY * 2
         self.move_val = self.VELOCITY / 100
         self.rot_val = self.VELOCITY / 100
-
-        print('CalibrationMain')
 
         self.video_manager = VideoManager()
         self.video_thread = self.video_manager.get_video_thread()
@@ -303,6 +302,8 @@ class CalibrationMain(QWidget):
         grid_layout.setVerticalSpacing(0)
         grid_layout.setContentsMargins(0, 0, 0, 0)
         return grid_layout
+
+
     def grid_header(self):
         # Create a QVBoxLayout for the TCP Position icon and text
         tcp_position_layout = QHBoxLayout()
@@ -338,6 +339,8 @@ class CalibrationMain(QWidget):
         grid_header_layout.addLayout(tcp_orientation_layout)
 
         return grid_header_layout
+
+
     def speed_header(self):
         # Create a QVBoxLayout for the TCP Position icon and text
         tcp_position_layout = QHBoxLayout()
@@ -376,7 +379,16 @@ class CalibrationMain(QWidget):
         self.camera_buttons[1].clicked.connect(self.create_folder)  # '카메라 연결' 버튼을 connect_camera 함수에 연결
         self.camera_buttons[2].clicked.connect(self.save_image)  # '카메라 연결' 버튼을 connect_camera 함수에 연결
         self.camera_buttons[3].clicked.connect(self.calibration_connect)  # '카메라 연결' 버튼을 connect_camera 함수에 연결
+        self.camera_buttons[4].clicked.connect(self.folder_open)  # '카메라 연결' 버튼을 connect_camera 함수에 연결
         return button_layout
+    def folder_open(self):
+        try:  # 윈도우
+            os.startfile(self.folder_path)
+        except AttributeError:  # 리눅스
+            subprocess.call(['xdg-open', self.folder_path])
+
+
+
 
 
     def calibration_connect(self):
@@ -539,9 +551,6 @@ class CalibrationMain(QWidget):
             self.toast.show()
         else:
             QMessageBox.information(self, "No folder selected", "Please create a folder first.")
-
-
-
 
     def create_button(self, button_info, icon_size):
 

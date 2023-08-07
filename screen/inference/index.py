@@ -570,6 +570,7 @@ class VideoThread(QThread):
                 QMessageBox.information(self, "Connection failed", "Could not connect to the selected camera: {}".format(e))
 
     def disconnect_camera(self):
+        print('inferencet 카메라 중단 ㅋ')
         with self.lock:
             if self.is_connected:
                 self.pipeline.stop()

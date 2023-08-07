@@ -76,6 +76,8 @@ class VideoThread(QThread):
                 bgr_frame = cv2.cvtColor(rgbImage, cv2.COLOR_RGB2BGR)
                 # If we are recording, write the frame into the video writer
                 self.video_writer.write(bgr_frame)
+
+
     def connect_camera(self, camera_name):
         self.mutex.lock()  # Lock the mutex
         try:

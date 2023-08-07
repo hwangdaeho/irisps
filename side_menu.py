@@ -40,7 +40,7 @@ def create_side_menu(stacked_widget, main_window):
     button4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # 아이콘을 글자 위에 배치합니다.
     button4.setFixedHeight(button_height)
     button4.setFixedWidth(button_width)
-    button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: white; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
+    button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
     button4.clicked.connect(
         lambda: [
             main_window.disconnect_global_camera(),
@@ -63,6 +63,7 @@ def create_side_menu(stacked_widget, main_window):
     button2.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0;font-weight: bold;'.format(font_size))
     button2.clicked.connect(
         lambda: [
+            main_window.disconnect_global_camera(),
             main_window.load_screen_from_path('screen/calibration/index.py', 'CalibrationMain'),
             main_window.update_header_text("캘리브레이션"),
             main_window.update_header("캘리브레이션", "screen/calibration/step/step1.py", "GuideScreen"),
@@ -83,6 +84,7 @@ def create_side_menu(stacked_widget, main_window):
     button3.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0;font-weight: bold;'.format(font_size))
     button3.clicked.connect(
         lambda: [
+            main_window.disconnect_global_camera(),
             main_window.load_screen_from_path('screen/inference/category.py', 'Category'),
             main_window.update_header_text("실시간 모니터링 & 운영"),
             main_window.update_header("실시간 모니터링 & 운영", 'screen/inference/category.py', 'Category'),
