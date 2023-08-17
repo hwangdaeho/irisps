@@ -153,6 +153,9 @@ class InferenceMain(QWidget):
         # self.thread.start()
     # Add new method to set the ComboBox value
     def handle_load_model_button_click(self):
+        if not self.config_file:
+            QMessageBox.information(self, "warning", "Please select an algorithm first")
+            return
         print('handle_load_model_button_click')
         if self.current_algo_type == 'Object Detection':
             if self.isYolo =="yolov5":
@@ -194,6 +197,8 @@ class InferenceMain(QWidget):
             self.isYolo = None
         elif item == 'pspnet':
             self.config_file = 'sgCfgFile/pspnet_r50-d8_4xb2-40k_cityscapes-512x1024.py'
+        else:
+            self.config_file = None
     # '모델 등록' 버튼이 클릭되었을 때 호출되는 함수
     def show_placeholder_image(self):
         # Load your placeholder image

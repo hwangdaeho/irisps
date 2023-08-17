@@ -277,7 +277,7 @@ class CalibrationMain(QWidget):
             (2, 6): { "image": ":image/Orientation/arrow-right.svg", "start_function": self.start_rotate_minus_X, "stop_function": self.stop_rotate_minus_X, "icon_size": QSize(40, 96)},
 
             (3, 1): { "image": ":image/position/arrow-down.svg", "start_function": self.start_move_plus_X, "stop_function": self.stop_move_plus_X, "icon_size": QSize(80, 40)},
-            (3, 3): { "image": ":image/position/button-Free.svg", "start_function": self.start_move_plus_X, "stop_function": self.stop_move_plus_X, "icon_size": QSize(80, 40)},
+            (3, 3): { "image": ":image/position/button-Free.svg", "start_function": self.start_freedrive, "stop_function": self.stop_freedrive, "icon_size": QSize(80, 40)},
             (3, 5): { "image": ":image/Orientation/arrow-down.svg", "start_function": self.start_rotate_minus_Y, "stop_function": self.stop_rotate_minus_Y, "icon_size": QSize(80, 40)},
         }
 
@@ -382,6 +382,9 @@ class CalibrationMain(QWidget):
         self.camera_buttons[4].clicked.connect(self.folder_open)  # '카메라 연결' 버튼을 connect_camera 함수에 연결
         return button_layout
     def folder_open(self):
+        if not hasattr(self, 'folder_path') or self.folder_path is None:
+            QMessageBox.information(self, "No folder selected", "경로를 설정해주세요")
+            return
         try:  # 윈도우
             os.startfile(self.folder_path)
         except AttributeError:  # 리눅스
@@ -392,6 +395,11 @@ class CalibrationMain(QWidget):
 
 
     def calibration_connect(self):
+
+        if not self.is_connected:
+            QMessageBox.information(self, "warning", "로봇 연결이 필요")
+            return
+
         if hasattr(self, 'folder_path'):
             first_directory = True
             for root, dirs, files in os.walk(self.folder_path):
@@ -989,7 +997,19 @@ class CalibrationMain(QWidget):
 
     def stop_rotate_plus_Z(self):
         self.timer.stop()
+    def start_freedrive(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.freedrive)
+        self.timer.start(100)
 
+    def stop_freedrive(self):
+        self.robot.set_freedrive(False)
+        self.timer.stop()
+
+    def freedrive(self):
+        print("change to freedive mode")
+        freedrive_duration = 10 # freedrive 모드 유지 시간 (초)
+        self.robot.set_freedrive(True)
 
     def move_minus_X(self):
         print(-1*self.move_val)
@@ -1028,10 +1048,7 @@ class CalibrationMain(QWidget):
     def rotate_plus_Z(self):
         self.robot.movel_tool((0, 0, 0, 0, 0, self.rot_val), acc=self.ACCELERATION, vel=self.VELOCITY, wait=False) # tool 기준
 
-    def freedrive(self):
-        print("change to freedive mode")
-        freedrive_duration = 10 # freedrive 모드 유지 시간 (초)
-        self.robot.set_freedrive(True)
+
 
 
 

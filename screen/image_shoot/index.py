@@ -17,6 +17,7 @@ from toast import Toast
 import glob
 from functools import partial
 from screen.video_manager import VideoManager
+import subprocess
 class ImageMain(QWidget):
     def __init__(self, parent=None, stacked_widget=None, main_window=None):
         print("Initializing ImageMain...")
@@ -184,12 +185,22 @@ class ImageMain(QWidget):
         else:
             QMessageBox.information(self, "No folder selected", "Please create a folder first.")
 
+    # 잠시 주석처리  나중에 다시 사용할수도 있음  데이터 보기 버튼 클릭
+
     def show_file_list(self):
-        if hasattr(self, 'folder_path'):
-            self.file_list_window = FileDisplayWidget(self.folder_path)
-            self.file_list_window.show()
-        else:
-            QMessageBox.information(self, "No folder selected", "Please create a folder first.")
+        if not hasattr(self, 'folder_path') or self.folder_path is None:
+            QMessageBox.information(self, "No folder selected", "경로를 설정해주세요")
+            return
+        try:  # 윈도우
+            os.startfile(self.folder_path)
+        except AttributeError:  # 리눅스
+            subprocess.call(['xdg-open', self.folder_path])
+    # def show_file_list(self):
+    #     if hasattr(self, 'folder_path'):
+    #         self.file_list_window = FileDisplayWidget(self.folder_path)
+    #         self.file_list_window.show()
+    #     else:
+    #         QMessageBox.information(self, "No folder selected", "Please create a folder first.")
 
 
     @Slot(QImage)

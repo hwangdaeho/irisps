@@ -40,11 +40,12 @@ def create_side_menu(stacked_widget, main_window):
     button4.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)  # 아이콘을 글자 위에 배치합니다.
     button4.setFixedHeight(button_height)
     button4.setFixedWidth(button_width)
-    button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
+    button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),
     button4.clicked.connect(
         lambda: [
             main_window.disconnect_global_camera(),
             main_window.load_screen_from_path('screen/crop/index.py', 'CropMain'),
+            main_window.update_header("크롭", 'screen/crop/index.py', 'CropMain'),
             main_window.update_header_text("크롭"),
             button4.setStyleSheet('border-top: 1px solid #EFEFEF;background: #ffffff; font-size: {}px; padding: 20px 0; font-weight: bold; color: #B50039; '.format(font_size)),
             button1.setStyleSheet('border-top: 1px solid #EFEFEF;background: #F7F7F7; font-size: {}px; padding: 20px 0; font-weight: bold; '.format(font_size)),

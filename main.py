@@ -29,10 +29,10 @@ class MainWindow(QMainWindow):
         self.stacked_widget = QStackedWidget()
         self.ImageMain = ImageMain()
         self.CalibrationMain = CalibrationMain()
-        self.CropMain = CropMain()
+        self.crop_main = CropMain()
         self.stacked_widget.addWidget(self.ImageMain)  # ImageMain is added first
         self.stacked_widget.addWidget(self.CalibrationMain)
-        self.stacked_widget.addWidget(self.CropMain)
+        self.stacked_widget.addWidget(self.crop_main)
         self.header_label = QLabel("이미지 촬영")
         self.header_label.setStyleSheet("color: #FFFFFF; font-size: 18px; margin-left: 10px;")
 
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
         self.show()
     def disconnect_global_camera(self):
         try:
-            self.CropMain.disconnect_camera() # CropMain 클래스의 카메라 연결 끊기 메서드 호출
+            self.crop_main.thread.disconnect_camera() # CropMain 클래스의 카메라 연결 끊기 메서드 호출
             self.inference_main.thread.disconnect_camera()
             self.video_manager = VideoManager()
             self.video_thread = self.video_manager.get_video_thread()
@@ -127,7 +127,9 @@ class MainWindow(QMainWindow):
 
     def update_header(self, text, guide_path=None, guide_class=None):
         self.header_label.setText(text)
-        if text == "실시간 모니터링 & 운영":
+        print(text)
+        print('asdsad')
+        if text == "실시간 모니터링 & 운영" or text == "크롭":
             self.guide_button.hide()
         else:
             if guide_path and guide_class:
