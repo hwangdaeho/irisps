@@ -50,5 +50,28 @@
     <file>image/Orientation/TCP-Orientation.svg</file>
     <file>image/Speed.svg</file>
 
+    <file>image/icon_auto_b.svg</file>
+    <file>image/icon_auto_w.svg</file>
+    <file>image/icon_calibraio_b.svg</file>
+    <file>image/icon_calibraion_w.svg</file>
+    <file>image/icon_camera_b.svg</file>
+    <file>image/icon_camera_w.svg</file>
+    <file>image/icon_monitorring_b.svg</file>
+    <file>image/icon_monitorring_w.svg</file>
+    <file>image/icon_setup_b.svg</file>
+    <file>image/icon_setup_w.svg</file>
+    <file>image/icon_arrow.svg</file>
+
+    <file>image/Progressbar1.svg</file>
+    <file>image/Progressbar1.png</file>
+    <file>image/Progressbar2.svg</file>
+    <file>image/Progressbar2.png</file>
+    <file>image/Progressbar3.svg</file>
+    <file>image/Progressbar3.png</file>
+    <file>image/Progressbar4.svg</file>
+    <file>image/Progressbar4.png</file>
+    <file>image/dog.png</file>
+    <file>image/dog2.png</file>
+
 </qresource>
 </RCC>

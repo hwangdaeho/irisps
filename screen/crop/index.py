@@ -5,7 +5,7 @@ import pyrealsense2 as rs
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QToolButton, QInputDialog
 from PySide6.QtGui import QImage, QPixmap, QIcon
 from PySide6.QtCore import Qt, QTimer, Slot, QSize, QThread
-from screen.video_manager import VideoManager
+# from screen.video_manager import VideoManager
 from PySide6.QtCore import Signal
 from threading import Lock
 class CropMain(QWidget):
@@ -145,9 +145,9 @@ class VideoThread(QThread):
 
     changePixmap = Signal(QImage)  # For the processed image
 
-    def __init__(self, CropMain, *args, **kwargs):
+    def __init__(self, crop_main, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.CropMain = CropMain
+        self.crop_main = crop_main
         self.lock = Lock()
         self.video_writer = None
         self.timer = QTimer()
@@ -175,12 +175,12 @@ class VideoThread(QThread):
 
             # 프레임을 Numpy 배열로 변환
             color_image = np.asanyarray(color_frame.get_data())
-            self.CropMain.color_image = color_image
+            self.crop_main.color_image = color_image
             # 워터셰드 알고리즘을 이용하여 이미지 분할
             dilated_mask = self.watershed_segmentation(color_image)
             masked_frame = cv2.bitwise_and(color_image, color_image, mask=dilated_mask)
-            label_width = self.CropMain.image_label.width()
-            label_height = self.CropMain.image_label.height()
+            label_width = self.crop_main.image_label.width()
+            label_height = self.crop_main.image_label.height()
             frame_height, frame_width, _ = color_image.shape
 
             # 드래그하는 동안에만 초록색 사각형을 표시
@@ -188,7 +188,7 @@ class VideoThread(QThread):
             if self.mouse_pressed and self.x1 != -1 and self.y1 != -1:
                 # cv2.rectangle(temp_frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 0), 2)
                 cv2.rectangle(color_image, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 0), 2)
-            self.display_frame(self.CropMain.image_label, color_image)
+            self.display_frame(self.crop_main.image_label, color_image)
             # 드래그가 끝나면 해당 영역을 선택
 
             if not self.mouse_pressed and self.x1 != -1 and self.y1 != -1 and self.x2 != -1 and self.y2 != -1:
@@ -197,7 +197,7 @@ class VideoThread(QThread):
                 cropped_masked_frame = masked_frame[self.y1:self.y2, self.x1:self.x2]
 
                 # 크롭된 이미지를 오른쪽 화면 크기로 확대
-                target_width, target_height = self.CropMain.image_label_raw.width(), self.CropMain.image_label_raw.height()
+                target_width, target_height = self.crop_main.image_label_raw.width(), self.crop_main.image_label_raw.height()
 
 
                 # 마스크 초기화
@@ -227,19 +227,18 @@ class VideoThread(QThread):
 
                 resized_cropped_masked_frame = cv2.resize(cropped_masked_frame, (target_width, target_height))
                 # 선택된 영역을 오른쪽 화면에 표시
-                self.display_frame(self.CropMain.image_label_raw, resized_cropped_masked_frame)
+                self.display_frame(self.crop_main.image_label_raw, resized_cropped_masked_frame)
             else:
                 # 마우스 드래그 영역에 대한 이미지를 왼쪽 화면에 표시
-                self.display_frame(self.CropMain.image_label, temp_frame)
+                self.display_frame(self.crop_main.image_label, temp_frame)
 
             # 실시간 화면을 왼쪽 화면에 표시
             color_image = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
-            self.display_frame(self.CropMain.image_label, color_image)
+            self.display_frame(self.crop_main.image_label, color_image)
 
     def connect_camera(self, camera_name):
         with self.lock:
             try:
-
                 self.pipeline.start(self.config)
                 self.is_connected = True
                 print('crop Cameara 연결')
@@ -275,10 +274,10 @@ class VideoThread(QThread):
         return thresh
 
     def disconnect_camera(self):
-        print('crop Cameara 중단')
-        print(self.is_connected)
-        print('crop Cameara 중단')
         with self.lock:
             if self.is_connected:
+                print('crop Cameara 중단')
+                print(self.is_connected)
+                print('crop Cameara 중단')
                 self.pipeline.stop()
                 self.is_connected = False

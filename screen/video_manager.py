@@ -69,7 +69,8 @@ class VideoThread(QThread):
             bytesPerLine = ch * w
             convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
 
-            p = convertToQtFormat.scaled(self.rs_color_width, self.rs_color_height, Qt.KeepAspectRatio)
+            # p = convertToQtFormat.scaled(self.rs_color_width, self.rs_color_height, Qt.KeepAspectRatio)
+            p = convertToQtFormat.scaled(640, 480, Qt.KeepAspectRatio)
 
             self.changePixmap.emit(p)
             if is_recording and self.video_writer is not None:
